@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今天吃什麼</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+text-align: center;
+padding: 50px;
+margin: 0;
+background: linear-gradient(135deg, #FFDEE9, #B5FFFC);
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+color: #333;
+position: relative;
+}
+
+h1 {
+font-size: 3em;
+color: #4A90E2;
+text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+h2 {
+color: #333;
+font-size: 1.8em;
+margin-bottom: 20px;
+}
+
+button {
+font-size: 1.2em;
+padding: 10px 20px;
+margin: 10px;
+border: none;
+border-radius: 8px;
+color: white;
+cursor: pointer;
+background: linear-gradient(135deg, #FF6A6A, #FFAA6A);
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+transition: background 0.3s ease;
+}
+
+button:hover {
+background: linear-gradient(135deg, #FFAA6A, #FF6A6A);
+}
+
+#result {
+font-size: 2em;
+margin-top: 30px;
+color: #4A90E2;
+padding: 20px;
+background: #FFFFFFBB;
+border-radius: 10px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.page { display: none; }
+.active { display: block; }
+/* 隱藏未顯示頁面 */
+    .page { display: none; }
+    .active { display: block; }
+
+    /* 右下角時間與用餐時段顯示 */
+    #timeAndMealDisplay {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        font-size: 1em;
+        color: #666;
+        text-align: center;
+    }
+
+    /* 右上角返回首頁按鈕 */
+    .back-to-home {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        font-size: 1.2em;
+        color: white;
+        background: #FF6A6A;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: background 0.3s ease;
+    }
+
+    .back-to-home:hover {
+        background: #FFAA6A;
+    }
+
+.dish-container {
+text-align: center;
+margin-top: 20px;
+}
+
+.dish-name {
+font-size: 1.5em;
+color: white;
+text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+background-color: rgba(0, 0, 0, 0.5);
+padding: 5px 10px;
+border-radius: 10px;
+margin-bottom: 10px;
+}
+
+img {
+max-width: 200px;
+height: auto;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+</style>
+</head>
+<body>
+<h1>今天吃什麼？</h1>
+<!-- 右上角返回首頁按鈕 -->
+<button class="back-to-home" onclick="goToPage('startPage')">返回首頁</button>
+<button class="back-to-home" onclick="goToPage('startPage')">返回首頁</button>
+<!-- 偏好設置頁面 -->
+<div id="preferencesPage" class="page">
+    <h2>設置您的飲食偏好</h2>
+    <label>
+        <input type="checkbox" id="vegetarian"> 素食
+    </label>
+    <button onclick="savePreferences()">儲存偏好</button>
+</div>
+
+<!-- 自訂餐點頁面 -->
+<div id="customDishPage" class="page">
+    <h2>新增自訂餐點</h2>
+    <form id="customDishForm" onsubmit="addCustomDish(event)">
+        <input type="text" id="dishName" placeholder="餐點名稱" required>
+        <input type="text" id="dishType" placeholder="餐點類型（如正餐、甜點）" required>
+        <input type="number" id="dishCalories" placeholder="熱量 (卡)" required>
+        <button type="submit">新增餐點</button>
+    </form>
+</div>
+
+<!-- 結果顯示頁面 -->
+<div id="resultPage" class="page">
+    <h2>今天吃什麼呢？</h2>
+    <div id="result">請選擇餐點偏好</div>
+    <button onclick="goToPage('startPage')">重新選擇</button>
+</div>
+
+<!-- 每日推薦區塊 -->
+<div id="dailyRecommendation">
+    <h2>今日推薦</h2>
+    <p id="recommendationDish"></p>
+</div>
+
+<!-- 時間與用餐時段顯示 -->
+<div id="timeAndMealDisplay"></div>
+
+<!-- 開始頁面 -->
+<div id="startPage" class="page active">
+<h2>開始決定今天的餐點吧！</h2>
+<button onclick="goToPage('mealTypePage')">開始</button>
+<button onclick="goToPage('preferencesPage')">設置偏好</button>
+</div>
+
+<!-- 選擇餐點類型頁面 -->
+<div id="mealTypePage" class="page">
+<h2>請選擇您想要的餐點類型</h2>
+<button onclick="chooseMealType('main')">正餐</button>
+<button onclick="chooseMealType('dessert')">點心</button>
+<button onclick="goToPage('startPage')">返回首頁</button>
+</div>
+
+<!-- 選擇正餐或點心詳細類型頁面 -->
+<div id="mealDetailPage" class="page">
+<h2 id="mealDetailTitle">選擇正餐或點心詳細類型</h2>
+<div id="mealDetails"></div>
+<button onclick="goToPage('mealTypePage')">返回上一頁</button>
+</div>
+
+<!-- 結果頁面 -->
+<div id="resultPage" class="page">
+<div id="result"></div>
+<button onclick="goToPage('startPage')">重新選擇</button>
+</div>
+
+<script>
+const dishes = {
+main: {
+taiwan: [
+{ name: "四神湯", img: "https://imageproxy.icook.network/fit?background=255%2C255%2C255&height=443&nocrop=true&stripmeta=true&type=auto&url=http%3A%2F%2Ftokyo-kitchen.icook.tw.s3.amazonaws.com%2Fuploads%2Frecipe%2Fcover%2F420760%2Fff1fea586c665178.jpg&width=443" },
+{ name: "蚵仔煎", img: "https://www.kindomliving.com.tw/wp-content/uploads/2022/06/%E5%B1%85%E5%BF%83%E8%AA%8C%E7%B6%B2%E7%AB%992022602-%E9%A3%9F-Comfort-Food-%E8%9A%B5%E4%BB%94%E7%85%8E01.jpg" },
+{ name: "雞腿便當", img: "https://img.ltn.com.tw/Upload/food/page/2023/01/04/230104-12048-14-azpZI.jpg" },
+{ name: "蔔蔔糕", img: "https://imageproxy.icook.network/fit?background=255%2C255%2C255&height=443&nocrop=true&stripmeta=true&type=auto&url=http%3A%2F%2Ftokyo-kitchen.icook.tw.s3.amazonaws.com%2Fuploads%2Frecipe%2Fcover%2F344880%2F3ed01d080c54cdf9.jpg&width=443" }
+],
+japan: [
+{ name: "壽司", img: "https://scontent.ftpe4-1.fna.fbcdn.net/v/t1.6435-9/40258815_420736478453315_565555113079341056_n.jpg?stp=dst-jpg_s720x720&_nc_cat=101&ccb=1-7&_nc_sid=127cfc&_nc_ohc=wHx7VsiaikgQ7kNvgHBFXho&_nc_zt=23&_nc_ht=scontent.ftpe4-1.fna&_nc_gid=A4206DgJDrSS4vH--khaT1j&oh=00_AYDU3jTkeslDpYYX0J9XD8srgdvp5bDHcJIMC0W04N022A&oe=675FD769" },
+{ name: "拉麵", img: "https://i0.wp.com/www.tripresso.com/blog/wp-content/uploads/2021/02/shutterstock_1135797380.jpg?w=1000&ssl=1" },
+{ name: "丼飯", img: "https://images.chinatimes.com/newsphoto/2024-06-27/1024/20240627000898.jpg" }
+],
+korea: [
+{ name: "部隊鍋", img: "https://img.ltn.com.tw/Upload/food/page/2017/03/08/170308-5454-0-CNf3w.jpg" },
+{ name: "石鍋拌飯", img: "https://img-global.cpcdn.com/recipes/9f2cd20ec89effa3/1360x964cq70/%E9%9F%93%E5%BC%8F%E7%9F%B3%E9%8D%8B%E6%8B%8C%E9%A3%AF%E5%89%B5%E6%84%8F%E6%96%99%E7%90%86-%E9%A3%9F%E8%AD%9C%E6%88%90%E5%93%81%E7%85%A7%E7%89%87.webp" },
+{ name: "辣炒年糕", img: "https://www.cookpot.com.tw/cache/cutw_800h_600/6d2f9c7312b4f0b8c69e279db53ced951478499779.jpg" }
+]
+},
+dessert: {
+cold: [
+{ name: "冰淇淋", img: "https://images.chinatimes.com/newsphoto/2024-08-10/1024/20240810003209.jpg" },
+{ name: "刨冰", img: "https://assets.tmecosys.com/image/upload/t_web378x315/img/recipe/ras/Assets/5e7a19c5aa07fc358250a8f857b2ff7a/Derivates/ce760ea8e320b57993e6bac9546fc3461803b7d1.jpg" },
+{ name: "生菜沙拉", img: "https://healthies.com/wp-content/uploads/2023/09/1646037185166.jpg" },
+{ name: "巧克力蛋糕", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Pexels-photo-132694.jpg/330px-Pexels-photo-132694.jpg" },
+{ name: "生乳捲", img: "https://img.shoplineapp.com/media/image_clips/63998c10c054b90025fe5e73/original.jpg?1671007248" }
+],
+hot: [
+{ name: "紅豆湯", img: "https://scontent.ftpe4-2.fna.fbcdn.net/v/t39.30808-6/463257823_8739682536054335_5647107694262989650_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=0b6b33&_nc_ohc=iOSl7BKxOF0Q7kNvgGmCR-X&_nc_zt=23&_nc_ht=scontent.ftpe4-2.fna&_nc_gid=AFdx4hbr0gz1UIxaq72hJcm&oh=00_AYCkr7ffcA0yA_16il-mTH7JC_zGi0DI--rCES3OTbi6RA&oe=673E085B" },
+{ name: "薯條", img: "https://down-tw.img.susercontent.com/file/tw-11134207-7r98z-lyn9n206fy8ue2.webp" },
+{ name: "地瓜", img: "https://media.nownews.com/nn_media/thumbnail/2021/11/1636859540372-9c5872e0b9304192a5a52bbd55382666-800x534.jpg?unShow=false&waterMark=false" },
+{ name: "地瓜球", img: "https://imageproxy.icook.network/fit?background=255%2C255%2C255&height=443&nocrop=true&stripmeta=true&type=auto&url=http%3A%2F%2Ftokyo-kitchen.icook.tw.s3.amazonaws.com%2Fuploads%2Frecipe%2Fcover%2F384072%2F5ebe7f44f3280e79.jpg&width=443" },
+{ name: "烤布丁", img: "https://bakingchi.com/wp-content/uploads/2022/09/EC6A0F6F-9521-4622-A6B3-80A8D9DF83CA.jpg" }
+]
+}
+};
+
+let mealChoice = ''; // 記錄用戶選擇的餐點類型
+
+function goToPage(pageId) {
+const pages = document.querySelectorAll('.page');
+pages.forEach(page => page.classList.remove('active'));
+document.getElementById(pageId).classList.add('active');
+}
+
+function chooseMealType(type) {
+mealChoice = type;
+goToPage('mealDetailPage');
+showMealDetails(type);
+}
+
+function showMealDetails(type) {
+const detailsDiv = document.getElementById('mealDetails');
+const categories = Object.keys(dishes[type]);
+const title = document.getElementById('mealDetailTitle');
+title.textContent = type === 'main' ? '選擇正餐類型' : '選擇點心類型';
+detailsDiv.innerHTML = ''; // 清空之前的內容
+
+categories.forEach(category => {
+const button = document.createElement('button');
+button.textContent = category === 'taiwan' ? '台式' : category === 'japan' ? '日式' : category === 'korea' ? '韓式' : category === 'cold' ? '冷食' : '熱食';
+button.onclick = () => showDishDetails(category);
+detailsDiv.appendChild(button);
+});
+}
+
+function showDishDetails(category) {
+const type = mealChoice;
+const categoryList = dishes[type][category];
+const resultDiv = document.getElementById("result");
+resultDiv.innerHTML = ''; // 清空之前的內容
+
+// 隨機選擇一個菜品
+const randomDish = categoryList[Math.floor(Math.random() * categoryList.length)];
+
+const dishDiv = document.createElement('div');
+dishDiv.className = 'dish-container';
+
+const dishName = document.createElement('div');
+dishName.className = 'dish-name';
+dishName.textContent = randomDish.name;
+
+const dishImg = document.createElement('img');
+dishImg.src = randomDish.img;
+
+dishDiv.appendChild(dishName);
+dishDiv.appendChild(dishImg);
+resultDiv.appendChild(dishDiv);
+
+goToPage('resultPage');
+}
+function savePreferences() {
+        const vegetarian = document.getElementById("vegetarian").checked;
+        localStorage.setItem("preferences", JSON.stringify({ vegetarian }));
+        alert("偏好已儲存！");
+    }
+
+    function addCustomDish(event) {
+        event.preventDefault();
+        const name = document.getElementById("dishName").value;
+        const type = document.getElementById("dishType").value;
+        const calories = document.getElementById("dishCalories").value;
+        alert(`已新增餐點：${name}`);
+    }
+function updateTimeDisplay() {
+        const now = new Date();
+        const formattedTime = now.toLocaleTimeString();
+        document.getElementById("timeAndMealDisplay").innerHTML = `
+            ${formattedTime}<br>
+            ${getMealTime(now)}
+        `;
+    }
+
+    function getMealTime(now) {
+        const hour = now.getHours();
+        if (hour >= 6 && hour < 9) return "早餐時間";
+        if (hour >= 11 && hour < 14) return "午餐時間";
+        if (hour >= 17 && hour < 20) return "晚餐時間";
+        return "非用餐時間";
+    }
+
+    setInterval(updateTimeDisplay, 1000);
+    loadDailyRecommendation();
+</script>
+</body>
+</html>
+
+
